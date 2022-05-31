@@ -36,6 +36,14 @@ async function run() {
             res.send({ result });
         });
 
+        // get all products
+        app.get('/products', async (req, res) => {
+            const query = {};
+            const cursor = productCollection.find(query);
+            const products = await cursor.toArray();
+            res.send(products);
+        });
+
         // post a product
         app.post('/add_product', async (req, res) => {
             const newProduct = req.body;
