@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { MongoClient, ServerApiVersion } from 'mongodb';
+import { MongoClient, ObjectId, ServerApiVersion } from 'mongodb';
 import 'dotenv/config';
 
 const app = express();
@@ -20,6 +20,8 @@ async function run() {
         const reviewCollection = client.db("ManufacturerWebsiteToolsTun").collection("allReviews");
 
         const productCollection = client.db("ManufacturerWebsiteToolsTun").collection("allProducts");
+
+        const orderCollection = client.db("ManufacturerWebsiteToolsTun").collection("allOrders");
 
         // get all reviews
         app.get('/reviews', async (req, res) => {
@@ -44,12 +46,29 @@ async function run() {
             res.send(products);
         });
 
+        // GET single product
+        app.get('/all_tools/:toolId', async (req, res) => {
+            const id = req.params.toolId;
+            const query = { _id: ObjectId(id) };
+            const result = await productCollection.findOne(query);
+            res.send(result);
+        });
+
         // post a product
         app.post('/add_product', async (req, res) => {
             const newProduct = req.body;
             const result = await productCollection.insertOne(newProduct);
             res.send({ result });
         });
+
+        // post an order
+        app.post('/place_order', async (req, res) => {
+            const newOrder = req.body;
+            const result = await orderCollection.insertOne(newOrder);
+            res.send({ result });
+        });
+
+
 
     } finally {
         //   await client.close();
