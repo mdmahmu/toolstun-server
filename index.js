@@ -19,6 +19,7 @@ async function run() {
         await client.connect();
         const reviewCollection = client.db("ManufacturerWebsiteToolsTun").collection("allReviews");
 
+        const productCollection = client.db("ManufacturerWebsiteToolsTun").collection("allProducts");
 
         // get all reviews
         app.get('/reviews', async (req, res) => {
@@ -34,12 +35,19 @@ async function run() {
             const result = await reviewCollection.insertOne(newReview);
             res.send({ result });
         });
+
+        // post a product
+        app.post('/add_product', async (req, res) => {
+            const newProduct = req.body;
+            const result = await productCollection.insertOne(newProduct);
+            res.send({ result });
+        });
+
     } finally {
         //   await client.close();
     }
 }
 run().catch(console.dir);
-
 
 app.get('/', (req, res) => {
     res.send('Manufacturer Website');
