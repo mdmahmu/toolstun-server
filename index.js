@@ -19,10 +19,10 @@ async function run() {
         await client.connect();
         const reviewCollection = client.db("ManufacturerWebsiteToolsTun").collection("allReviews");
 
-        const ordersCollection = client.db("ManufacturerWebsiteToolsTun").collection("orders");
 
         const productCollection = client.db("ManufacturerWebsiteToolsTun").collection("allProducts");
 
+        const ordersCollection = client.db("ManufacturerWebsiteToolsTun").collection("orders");
 
         // get all reviews
         app.get('/reviews', async (req, res) => {
@@ -75,7 +75,15 @@ async function run() {
             const query = { emailOrUid: emailOrUid };
             const cursor = ordersCollection.find(query);
             const myOrders = await cursor.toArray();
-            res.send({ myOrders });
+            res.send(myOrders);
+        });
+
+        // GET single order
+        app.get('/payment/:orderId', async (req, res) => {
+            const id = req.params.orderId;
+            const query = { _id: ObjectId(id) };
+            const result = await ordersCollection.findOne(query);
+            res.send(result);
         });
 
     } finally {
