@@ -1,7 +1,9 @@
 import express from 'express';
 import cors from 'cors';
-import { MongoClient, ObjectId, ServerApiVersion } from 'mongodb';
 import 'dotenv/config';
+import { MongoClient, ObjectId, ServerApiVersion } from 'mongodb';
+import Stripe from 'stripe';
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -48,8 +50,8 @@ async function run() {
         });
 
         // GET single product
-        app.get('/all_tools/:toolId', async (req, res) => {
-            const id = req.params.toolId;
+        app.get('/all_tools/:id', async (req, res) => {
+            const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = await productCollection.findOne(query);
             res.send(result);
@@ -78,12 +80,27 @@ async function run() {
             res.send(myOrders);
         });
 
-        // GET single order
+        // GET single order data
         app.get('/payment/:orderId', async (req, res) => {
             const id = req.params.orderId;
             const query = { _id: ObjectId(id) };
             const result = await ordersCollection.findOne(query);
             res.send(result);
+        });
+
+        //payment
+        app.post("/create-payment-intent", async (req, res) => {
+            const { price } = req.body;
+            const amount = price * 100;
+
+            if (amount) {
+                const paymentIntent = await stripe.paymentIntents.create({
+                    amount: amount,
+                    currency: "usd",
+                    payment_method_types: ["card"]
+                });
+                res.send({ clientSecret: paymentIntent.client_secret });
+            }
         });
 
     } finally {
