@@ -19,9 +19,10 @@ async function run() {
         await client.connect();
         const reviewCollection = client.db("ManufacturerWebsiteToolsTun").collection("allReviews");
 
+        const ordersCollection = client.db("ManufacturerWebsiteToolsTun").collection("orders");
+
         const productCollection = client.db("ManufacturerWebsiteToolsTun").collection("allProducts");
 
-        const orderCollection = client.db("ManufacturerWebsiteToolsTun").collection("allOrders");
 
         // get all reviews
         app.get('/reviews', async (req, res) => {
@@ -64,11 +65,18 @@ async function run() {
         // post an order
         app.post('/place_order', async (req, res) => {
             const newOrder = req.body;
-            const result = await orderCollection.insertOne(newOrder);
+            const result = await ordersCollection.insertOne(newOrder);
             res.send({ result });
         });
 
-
+        // get my orders
+        app.get('/orders/', async (req, res) => {
+            const emailOrUid = req.query.emailOrUid;
+            const query = { emailOrUid: emailOrUid };
+            const cursor = ordersCollection.find(query);
+            const myOrders = await cursor.toArray();
+            res.send({ myOrders });
+        });
 
     } finally {
         //   await client.close();
