@@ -89,7 +89,7 @@ async function run() {
         });
 
         //payment
-        app.post("/create-payment-intent", async (req, res) => {
+        app.post('/create-payment-intent', async (req, res) => {
             const { price } = req.body;
             const amount = price * 100;
 
@@ -101,6 +101,38 @@ async function run() {
                 });
                 res.send({ clientSecret: paymentIntent.client_secret });
             }
+        });
+
+        //update data after payment
+        app.put('/update_data', async (req, res) => {
+            const { productId, bought, orderId, transactionId } = req.body;
+            console.log(productId);
+
+            const query = { _id: ObjectId(productId) };
+            const specificProduct = await productCollection.findOne(query);
+            const newQuantity = parseInt(specificProduct.quantity) - parseInt(bought);
+
+            const newSold = parseInt(specificProduct.sold) + parseInt(bought);
+            console.log(newQuantity);
+
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    quantity: newQuantity,
+                    sold: newSold
+                },
+            };
+            const result1 = await productCollection.updateOne(query, updateDoc, options);
+
+            const filter = { _id: ObjectId(orderId) };
+            const updateDoc2 = {
+                $set: {
+                    transactionId: transactionId
+                },
+            };
+            const result2 = await ordersCollection.updateOne(filter, updateDoc2, options);
+
+            res.send({ result1, result2 });
         });
 
     } finally {
