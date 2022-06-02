@@ -88,6 +88,14 @@ async function run() {
             res.send(result);
         });
 
+        //deleting an order
+        app.delete('/orders/:orderId', async (req, res) => {
+            const id = req.params.orderId;
+            const query = { _id: ObjectId(id) };
+            const result = await ordersCollection.deleteOne(query);
+            res.send(result);
+        });
+
         //payment
         app.post('/create-payment-intent', async (req, res) => {
             const { price } = req.body;
