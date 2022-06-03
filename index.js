@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
 import { MongoClient, ObjectId, ServerApiVersion } from 'mongodb';
+import jwt from 'jsonwebtoken';
 import Stripe from 'stripe';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -25,6 +26,8 @@ async function run() {
         const productCollection = client.db("ManufacturerWebsiteToolsTun").collection("allProducts");
 
         const ordersCollection = client.db("ManufacturerWebsiteToolsTun").collection("orders");
+
+        const usersCollection = client.db("ManufacturerWebsiteToolsTun").collection("users");
 
         // get all reviews
         app.get('/reviews', async (req, res) => {
@@ -142,6 +145,22 @@ async function run() {
 
             res.send({ result1, result2 });
         });
+
+        // creating user
+        app.put('/user', async (req, res) => {
+            const { emailOrUid } = req.body;
+            const filter = { emailOrUid: emailOrUid };
+            const options = { upsert: true };
+
+            const updateDoc = {
+                $set: {
+                    emailOrUid: emailOrUid
+                },
+            };
+            const result = await usersCollection.updateOne(filter, updateDoc, options);
+            res.send({ result });
+        });
+
 
     } finally {
         //   await client.close();
